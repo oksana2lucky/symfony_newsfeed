@@ -1,0 +1,17 @@
+{% extends 'layout.html.twig' %}
+
+{% block page_contents %}
+    <div class="w3-container w3-blue-grey">
+        <h2>{{ news.title }}</h2>
+    </div>
+
+    <div class="w3-container">
+        <p>{{ news.summary }}</p>
+    </div>
+
+    <div class="w3-container w3-blue-grey">
+        <a href="{{ news.link }}">Resource</a>
+        <a href="{{ path('news_edit', {id: news.id}) }}">Edit</a>
+        <a href="{{ path('news_delete', {id: news.id}) }}">Delete</a>
+    </div>
+{% endblock %}

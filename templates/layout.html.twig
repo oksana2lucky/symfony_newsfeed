@@ -1,10 +1,13 @@
 {% extends 'base.html.twig' %}
 
 {% block header %}
-    <ul>
-        <li><a href="{{ path('news') }}">News List</a></li>
-        <li><a href="{{ path('news_add') }}">Add news</a></li>
-    </ul>
+    <div id="menu">
+        <ul>
+            <li class="main-left-point"><a href="{{ path('news') }}">NEWS LIST</a></li>
+            <li class="main-left-point"><a href="{{ path('news_add') }}">ADD NEWS</a></li>
+            {% block category_bar %}{% endblock %}
+        </ul>
+    </div>
 {% endblock %}
 
 {% block content %}

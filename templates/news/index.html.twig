@@ -2,11 +2,9 @@
 
 {% block title %}News list{% endblock %}
 
-{% block sidebar %}
+{% block category_bar %}
     {% for category in categories %}
-        <ul>
-            <li><a href="{{ path('news_category', {id: category.id}) }}">{{ category.name|upper }}</a></li>
-        </ul>
+        <li><a href="{{ path('news_category', {id: category.id}) }}">{{ category.name|upper }}</a></li>
     {% endfor %}
 {% endblock %}
 
@@ -14,12 +12,22 @@
     {% for newsItem in news %}
         <ul>
             <li>
-                <h3>{{ newsItem.title }}</h3>
-                <p>{{ newsItem.summary }}</p>
-                <a href="{{ newsItem.link }}">Resource</a>
-                <a href="{{ path('news_view', {id: newsItem.id}) }}">View</a>
-                <a href="{{ path('news_edit', {id: newsItem.id}) }}">Edit</a>
-                <a href="{{ path('news_delete', {id: newsItem.id}) }}">Delete</a>
+                <div class="news-card w3-card-4">
+                    <div class="w3-container w3-blue-grey">
+                        <h3>{{ newsItem.title }}</h3>
+                    </div>
+
+                    <div class="w3-container">
+                        <p>{{ newsItem.summary }}</p>
+                    </div>
+
+                    <div class="news-card-footer w3-container w3-blue-grey">
+                        <a href="{{ newsItem.link }}">Resource</a>
+                        <a href="{{ path('news_view', {id: newsItem.id}) }}">View</a>
+                        <a href="{{ path('news_edit', {id: newsItem.id}) }}">Edit</a>
+                        <a href="{{ path('news_delete', {id: newsItem.id}) }}">Delete</a>
+                    </div>
+                </div>
             </li>
         </ul>
     {% endfor %}
