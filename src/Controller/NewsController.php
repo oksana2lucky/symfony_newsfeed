@@ -16,7 +16,7 @@ class NewsController extends AbstractController
      */
     public function index()
     {
-        $news = $categories = $this->getDoctrine()->getRepository(News::class)
+        $news = $this->getDoctrine()->getRepository(News::class)
             ->findBy(
                 [],
                 ['postedAt' => 'DESC'],
