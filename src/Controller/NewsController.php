@@ -7,16 +7,22 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\News;
 use App\Entity\Category;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+
 
 class NewsController extends AbstractController
 {
     /**
+     * Show general news list
+     *
      * @Route("/news", name="news")
      */
     public function index()
@@ -38,6 +44,8 @@ class NewsController extends AbstractController
     }
 
     /**
+     * Show news page
+     *
      * @Route("/news/view/{id}", name="news_view")
      * @param $id int
      * @param $validator ValidatorInterface
@@ -61,6 +69,8 @@ class NewsController extends AbstractController
     }
 
     /**
+     * Show form for editing news
+     *
      * @Route("/news/edit/{id}", name="news_edit")
      * @param $id int
      * @param $validator ValidatorInterface
@@ -88,18 +98,23 @@ class NewsController extends AbstractController
 
         $defaults = [
             'title' => $news->getTitle(),
-            'categoryAt' => $news->getCategoryId(),
+            'category_id' => $news->getCategoryId(),
             'summary' => $news->getSummary(),
             'link' => $news->getLink(),
-            'postedAt' => $news->getPostedAt(),
+            'posted_at' => $news->getPostedAt(),
         ];
 
-        $form = $this->createFormBuilder($defaults)
+        $form = $this->createFormBuilder($defaults, [
+                'action' => $this->generateUrl('news_save'),
+                'method' => 'POST'
+            ])
             ->add('title', TextType::class)
-            ->add('categoryId', ChoiceType::class, ['choices' => $choiceCategory])
+            ->add('category_id', ChoiceType::class, ['choices' => $choiceCategory])
             ->add('summary', TextareaType::class)
             ->add('link', TextType::class, ['required' => false])
-            ->add('postedAt', DateType::class)
+            ->add('posted_at', DateType::class)
+            ->add('news_id', HiddenType::class, ['data' => $id])
+            ->add('save', SubmitType::class, ['label' => 'Save'])
             ->getForm();
 
         return $this->render('news/form.html.twig', [
@@ -110,6 +125,8 @@ class NewsController extends AbstractController
     }
 
     /**
+     * Show form for adding news
+     *
      * @Route("/news/add", name="news_add")
      */
     public function add()
@@ -125,12 +142,16 @@ class NewsController extends AbstractController
             'postedAt' => new \DateTime('now'),
         ];
 
-        $form = $this->createFormBuilder($defaults)
+        $form = $this->createFormBuilder($defaults, [
+                'action' => $this->generateUrl('news_save'),
+                'method' => 'POST'
+            ])
             ->add('title', TextType::class)
-            ->add('categoryId', ChoiceType::class, ['choices' => $choiceCategory])
+            ->add('category_id', ChoiceType::class, ['choices' => $choiceCategory])
             ->add('summary', TextareaType::class)
             ->add('link', TextType::class, ['required' => false])
-            ->add('postedAt', DateType::class)
+            ->add('posted_at', DateType::class)
+            ->add('save', SubmitType::class, ['label' => 'Save'])
             ->getForm();
 
         return $this->render('news/form.html.twig', [
@@ -141,6 +162,8 @@ class NewsController extends AbstractController
     }
 
     /**
+     * Delete news
+     *
      * @Route("/news/delete/{id}", name="news_delete")
      * @param $id int
      * @param $validator ValidatorInterface
@@ -162,10 +185,11 @@ class NewsController extends AbstractController
         $entityManager->flush();
 
         return $this->redirectToRoute('news');
-
     }
 
     /**
+     * Shows news list filtered by category
+     *
      * @Route("/news/category/{id}", name="news_category")
      * @param $id int
      * @param $validator ValidatorInterface
@@ -203,6 +227,49 @@ class NewsController extends AbstractController
         ]);
     }
 
+    /**
+     * Saves edited/new news object
+     *
+     * @Route("/news/save", name="news_save")
+     * @param $request Request
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @throws
+     */
+    public function save(Request $request)
+    {
+        $data = $request->request->get('form');
+        $id = $data['news_id'] ?? null;
+
+        if ($id) {
+            $news = $this->getDoctrine()->getRepository(News::class)
+                ->find($id);
+        } else {
+            $news = new News();
+        }
+
+        $category = $this->getDoctrine()->getRepository(Category::class)
+            ->find($data['category_id']);
+
+        $postedAt = $data['posted_at']['year'] .'-'.$data['posted_at']['month'].'-'.$data['posted_at']['day'] ?? 'now';
+
+        $news->setTitle($data['title'] ?? '');
+        $news->setCategoryId($category);
+        $news->setSummary($data['summary'] ?? '');
+        $news->setLink($data['link'] ?? null);
+        $news->setPostedAt(new \DateTime($postedAt));
+        $this->getDoctrine()->getManager()->persist($news);
+        $this->getDoctrine()->getManager()->flush();
+
+        return $this->redirectToRoute('news_view', ['id' => $news->getId()]);
+    }
+
+    /**
+     * Validates id param whether positive number it is
+     *
+     * @param $id int
+     * @param $validator ValidatorInterface
+     * @return bool|string
+     */
     private function validateId($id, $validator)
     {
         $idConstraint = new Assert\Positive();
