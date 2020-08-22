@@ -43,28 +43,19 @@ class NewsController extends AbstractController
      */
     public function view($id, ValidatorInterface $validator)
     {
-        $idConstraint = new Assert\Positive();
-        $idConstraint->message = 'Invalid id';
-
-        // use the validator to validate the value
-        $errors = $validator->validate(
-            $id,
-            $idConstraint
-        );
-
-        if (0 === count($errors)) {
-            $news = $this->getDoctrine()->getRepository(News::class)
-                ->find($id);
-
-            return $this->render('news/view.html.twig', [
-                'news'  => $news
-            ]);
-        } else {
-            $errorMessage = $errors[0]->getMessage();
+        $validated = $this->validateId($id, $validator);
+        if ($validated !== true) {
             return $this->render('errors.html.twig', [
-                'error'  => $errorMessage
+                'error'  => $validated
             ]);
         }
+
+        $news = $this->getDoctrine()->getRepository(News::class)
+            ->find($id);
+
+        return $this->render('news/view.html.twig', [
+            'news'  => $news
+        ]);
     }
 
     /**
@@ -100,6 +91,19 @@ class NewsController extends AbstractController
     public function viewByCategory(int $id)
     {
 
+    }
+
+    private function validateId($id, $validator)
+    {
+        $idConstraint = new Assert\Positive();
+        $idConstraint->message = 'Invalid id';
+
+        $errors = $validator->validate(
+            $id,
+            $idConstraint
+        );
+
+        return count($errors) ? $errors[0]->getMessage() : true;
     }
 }
 
