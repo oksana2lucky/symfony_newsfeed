@@ -1,7 +1,5 @@
 {% extends 'layout.html.twig' %}
 
-{% block title %}News list{% endblock %}
-
 {% block category_bar %}
     {% for category in categories %}
         <li><a href="{{ path('news_category', {id: category.id}) }}">{{ category.name|upper }}</a></li>
@@ -9,6 +7,7 @@
 {% endblock %}
 
 {% block page_contents %}
+    {% block category_title %}{% endblock %}
     {% for newsItem in news %}
         <ul>
             <li>

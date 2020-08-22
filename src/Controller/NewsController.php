@@ -103,10 +103,39 @@ class NewsController extends AbstractController
     /**
      * @Route("/news/category/{id}", name="news_category")
      * @param $id int
+     * @param $validator ValidatorInterface
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function viewByCategory(int $id)
+    public function viewByCategory(int $id, ValidatorInterface $validator)
     {
+        $validated = $this->validateId($id, $validator);
+        if ($validated !== true) {
+            return $this->render('errors.html.twig', [
+                'error'  => $validated
+            ]);
+        }
 
+        $categories = $this->getDoctrine()->getRepository(Category::class)
+            ->findAll();
+
+        foreach($categories as $category) {
+            if ($category->getId() == $id) {
+                $categoryName = $category->getName();
+                break;
+            }
+        }
+
+        $news = $this->getDoctrine()->getRepository(News::class)
+            ->findBy(
+                ['categoryId' => $id],
+                ['postedAt' => 'DESC']
+            );
+
+        return $this->render('news/category.html.twig', [
+            'title' => $categoryName ?? '',
+            'categories' => $categories,
+            'news'  => $news
+        ]);
     }
 
     private function validateId($id, $validator)

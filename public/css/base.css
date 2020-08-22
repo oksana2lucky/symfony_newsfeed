@@ -11,6 +11,11 @@
     font-size: 20px;
 }
 
+#content h1 {
+    font-size: 24px;
+    color: #666666;
+}
+
 ul {
     list-style-type: none;
     margin: 0;
