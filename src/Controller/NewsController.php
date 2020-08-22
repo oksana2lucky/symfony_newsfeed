@@ -7,10 +7,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\News;
 use App\Entity\Category;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 
 class NewsController extends AbstractController
 {
@@ -61,9 +63,49 @@ class NewsController extends AbstractController
     /**
      * @Route("/news/edit/{id}", name="news_edit")
      * @param $id int
+     * @param $validator ValidatorInterface
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @throws
      */
-    public function edit(int $id)
+    public function edit(int $id, ValidatorInterface $validator)
     {
+        $validated = $this->validateId($id, $validator);
+        if ($validated !== true) {
+            return $this->render('errors.html.twig', [
+                'error'  => $validated
+            ]);
+        }
+
+        $news = $this->getDoctrine()->getRepository(News::class)
+            ->find($id);
+
+        $categories = $this->getDoctrine()->getRepository(Category::class)
+            ->findAll();
+        $choiceCategory = [];
+        foreach($categories as $category) {
+            $choiceCategory[$category->getName()] = $category->getId();
+        }
+
+        $defaults = [
+            'title' => $news->getTitle(),
+            'categoryAt' => $news->getCategoryId(),
+            'summary' => $news->getSummary(),
+            'link' => $news->getLink(),
+            'postedAt' => $news->getPostedAt(),
+        ];
+
+        $form = $this->createFormBuilder($defaults)
+            ->add('title', TextType::class)
+            ->add('categoryId', ChoiceType::class, ['choices' => $choiceCategory])
+            ->add('summary', TextareaType::class)
+            ->add('link', TextType::class, ['required' => false])
+            ->add('postedAt', DateType::class)
+            ->getForm();
+
+        return $this->render('news/form.html.twig', [
+            'title' => 'Edit news',
+            'form' => $form->createView(),
+        ]);
 
     }
 
@@ -72,6 +114,29 @@ class NewsController extends AbstractController
      */
     public function add()
     {
+        $categories = $this->getDoctrine()->getRepository(Category::class)
+            ->findAll();
+        $choiceCategory = [];
+        foreach($categories as $category) {
+            $choiceCategory[$category->getName()] = $category->getId();
+        }
+
+        $defaults = [
+            'postedAt' => new \DateTime('now'),
+        ];
+
+        $form = $this->createFormBuilder($defaults)
+            ->add('title', TextType::class)
+            ->add('categoryId', ChoiceType::class, ['choices' => $choiceCategory])
+            ->add('summary', TextareaType::class)
+            ->add('link', TextType::class, ['required' => false])
+            ->add('postedAt', DateType::class)
+            ->getForm();
+
+        return $this->render('news/form.html.twig', [
+            'title' => 'Add news',
+            'form' => $form->createView(),
+        ]);
 
     }
 
