@@ -1,0 +1,26 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}News list{% endblock %}
+
+{% block sidebar %}
+    {% for category in categories %}
+        <ul>
+            <li><a href="{{ path('news_category', {id: category.id}) }}">{{ category.name|upper }}</a></li>
+        </ul>
+    {% endfor %}
+{% endblock %}
+
+{% block page_contents %}
+    {% for newsItem in news %}
+        <ul>
+            <li>
+                <h3>{{ newsItem.title }}</h3>
+                <p>{{ newsItem.summary }}</p>
+                <a href="{{ newsItem.link }}">Resource</a>
+                <a href="{{ path('news_view', {id: newsItem.id}) }}">View</a>
+                <a href="{{ path('news_edit', {id: newsItem.id}) }}">Edit</a>
+                <a href="{{ path('news_delete', {id: newsItem.id}) }}">Delete</a>
+            </li>
+        </ul>
+    {% endfor %}
+{% endblock %}

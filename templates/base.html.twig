@@ -2,11 +2,31 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}News Feed{% endblock %}</title>
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        {% block body %}
+            <div id="header">
+                {% block header %}{% endblock %}
+            </div>
+
+            <div id="sidebar">
+                {% block sidebar %}
+                {% endblock %}
+            </div>
+
+            <div id="content">
+                {% block content %}{% endblock %}
+            </div>
+
+            <div id="footer">
+                {% block footer %}
+                    <p>Designed with Symfony 5.1</p>
+                    <p>&copy; Copyright 2020 by <a href="https://github.com/oksana2lucky">Oksana Pampushchenko</a></p>
+                {% endblock %}
+            </div>
+        {% endblock %}
         {% block javascripts %}{% endblock %}
     </body>
 </html>
