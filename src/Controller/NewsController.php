@@ -78,9 +78,25 @@ class NewsController extends AbstractController
     /**
      * @Route("/news/delete/{id}", name="news_delete")
      * @param $id int
+     * @param $validator ValidatorInterface
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function delete(int $id)
+    public function delete(int $id, ValidatorInterface $validator)
     {
+        $validated = $this->validateId($id, $validator);
+        if ($validated !== true) {
+            return $this->render('errors.html.twig', [
+                'error'  => $validated
+            ]);
+        }
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $news = $this->getDoctrine()->getRepository(News::class)
+            ->find($id);
+        $entityManager->remove($news);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('news');
 
     }
 
